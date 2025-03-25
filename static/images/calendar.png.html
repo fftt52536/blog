@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <script src="jquery-3.5.0.min.js"></script>
+    <style>
+        html {
+            background-color: #ccc;
+        }
+        body {
+            margin: 0;
+            height: 100%;
+            font-size: 20px;
+            font-family: 宋体, serif;
+        }
+        select, button {
+            background-color: rgb(0, 255, 255);
+            color: rgb(156, 151, 143);
+            border: 1px solid #39f;
+            border-radius: 2px;
+        }
+        #calendar {
+            position: absolute;
+            left: 70px;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: pointer;
+            width: 300px;
+            height: 100%;
+            padding-left: 20px;
+            padding-right: 20px;
+            background: linear-gradient(rgb(0, 0, 0, 0.4), rgb(0, 0, 0), transparent, rgba(0, 0, 0, 0.2));
+            color: #fff;
+        }
+        #inner {
+            padding-top: 103px;
+        }
+        #days {
+            background-color: #fff;
+            border: 1px solid #000;
+        }
+        th, td {
+            width: 30px;
+            color: #000;
+        }
+        #dnow, .dday:hover, .dtitle {
+            background-color: #39f;
+            color: #fff;
+        }
+    </style>
+    <script src="jquery-3.5.0.min.js"></script>
+</head>
+<body>
+    <div id="calendar">
+        <div id="inner">
+            <div id="controls">
+                <div>
+                    年
+                    <select id="dyear"></select>
+                    <button id="ry">+</button>
+                    <button id="ly">-</button>
+                </div>
+                <br/>
+                <div>
+                    月
+                    <select id="dmonth"></select>
+                    <button id="rm">+</button>
+                    <button id="lm">-</button>
+                </div>
+                <br/>
+                <br/>
+                <br/>
+            </div>
+            <div>
+                <table id="days"></table>
+                <p id="tm"></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    var year = $("#dyear"),
+        month = $("#dmonth"),
+        ly = $("#ly"),
+        ry = $("#ry"),
+        lm = $("#lm"),
+        rm = $("#rm"),
+        dt = new Date(),
+        ndy = dt.getFullYear(),
+        ndm = dt.getMonth(),
+        ndd = dt.getDate();
+    function ddy (d){
+        dt.setDate(d);
+        ndy = dt.getFullYear();
+        ndm = dt.getMonth();
+        ndd = d;
+        odate();
+    }
+    for (var j = 1; j < 13; j++) {
+        month.append('<option value="'+(j-1)+'">'+j+'</option>');
+    }
+    for (var i = 1970; i < 2057; i++) {
+        year.append('<option value="'+i+'">'+i+'</option>');
+    }
+    year.val(ndy.toString());
+    month.val(ndm.toString());
+    /* 
+        输出日历，需要经常调用，所以成为一个函数。
+        需要全局变量：dt
+    */
+    function odate (){
+        var res = '<tr class="dtitle"><th>日</th><th>一</th>\
+            <th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr>';
+        $("#tm").text([ndy, ndm + 1, ndd].join("-"));
+        var m = dt.getMonth();
+        var y = dt.getFullYear();
+        dt.setDate(1);
+        while ( dt.getMonth() === m ) {
+            res += '<tr>';
+            var s = dt.getDay();
+            if ( s > 0 ) {
+                //注意，getDate是日，而getDay是周几，其中0代表星期日
+                res += '<td colspan="' + s + '">&nbsp;</td>';
+            }
+            while ( (s < 7) && (dt.getMonth() === m) ) {
+                res += '<td class="dday" ' + (((ndy === dt.getFullYear()) && (ndm === dt.getMonth()) && 
+                        (ndd === dt.getDate())) ? 'id="dnow" ' : '') +
+                        'onclick="ddy('+dt.getDate()+');">' + dt.getDate() + '</td>';
+                s++;
+                dt.setDate(dt.getDate() + 1);
+            }
+
+            res += '</tr>';
+        }
+        dt.setFullYear(y)
+        dt.setMonth(m);
+        $("#days").html(res);
+    }
+
+    year.on("change", function () {
+        dt.setFullYear(parseInt(year.val()));
+        odate();
+    });
+    month.on("change", function () {
+        dt.setMonth(parseInt(month.val()));
+        odate();
+    });
+    ly.on("click", function () {
+        if ( dt.getFullYear() > 1970 ) {
+            year.val(dt.getFullYear() - 1);
+            dt.setFullYear(dt.getFullYear() - 1);
+            odate();
+        }
+    });
+    lm.on("click", function () {
+        if ( (dt.getMonth() > 1) || (dt.getFullYear() > 1970) ) {
+            dt.setMonth(dt.getMonth() - 1);
+            month.val(dt.getMonth().toString());
+            year.val(dt.getFullYear().toString());
+            odate();
+        }
+    });
+    ry.on("click", function () {
+        if ( dt.getFullYear() < 2056 ) {
+            year.val((dt.getFullYear() + 1).toString());
+            dt.setFullYear(dt.getFullYear() + 1);
+            odate();
+        }
+    });
+    rm.on("click", function () {
+        if ( (dt.getMonth() < 11) || (dt.getFullYear() < 2056) ) {
+            dt.setMonth(dt.getMonth() + 1);
+            month.val(dt.getMonth().toString());
+            year.val(dt.getFullYear().toString());
+            odate();
+        }
+    });
+
+
+
+    $(document).ready(odate);
+</script>
